@@ -1,0 +1,12 @@
+**/__pycache__/
+**/*.py[cod]
+**/*.log
+.venv/
+venv/
+.pytest_cache/
+.env
+config.json
+content_cache.json
+captcha.jpg
+runtime/
+assets/images/
