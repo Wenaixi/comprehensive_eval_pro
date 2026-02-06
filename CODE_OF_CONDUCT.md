@@ -2,6 +2,8 @@
 
 This project follows the Contributor Covenant Code of Conduct.
 
+本项目的协作行为准则以 Contributor Covenant 为基础，鼓励尊重与理性沟通。
+
 ## Our Pledge
 
 We pledge to make participation in our community a harassment-free experience for everyone.
@@ -30,4 +32,3 @@ Project maintainers have the right and responsibility to remove, edit, or reject
 ## Attribution
 
 This Code of Conduct is adapted from the Contributor Covenant, version 2.1.
-

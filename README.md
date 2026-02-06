@@ -1,10 +1,7 @@
 # Comprehensive Eval Pro（综合评价自动化系统）
 
-[![Stars](https://img.shields.io/github/stars/Wenaixi/comprehensive_eval_pro?style=flat)](https://github.com/Wenaixi/comprehensive_eval_pro/stargazers)
 [![License](https://img.shields.io/github/license/Wenaixi/comprehensive_eval_pro?style=flat)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat)](#快速开始仅本地学习测试)
-
-如果觉得有用，可以点个 Star。
 
 ## 重要声明（请先阅读）
 
@@ -309,6 +306,6 @@ docker compose up --build
 - Wenaixi
 - cep@wenxi.dev
 
-## GitHub 仓库设置（可选）
+## 支持
 
-- Topics：python cli automation nazhinet 纳智网
+如果这个项目对你有帮助，欢迎点个 Star。
