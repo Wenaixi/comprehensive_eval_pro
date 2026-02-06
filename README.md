@@ -1,5 +1,11 @@
 # Comprehensive Eval Pro（综合评价自动化系统）
 
+[![Stars](https://img.shields.io/github/stars/Wenaixi/comprehensive_eval_pro?style=flat)](https://github.com/Wenaixi/comprehensive_eval_pro/stargazers)
+[![License](https://img.shields.io/github/license/Wenaixi/comprehensive_eval_pro?style=flat)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat)](#快速开始仅本地学习测试)
+
+如果觉得有用，可以点个 Star。
+
 ## 重要声明（请先阅读）
 
 本项目仅用于学习研究与安全合规的工程实践（例如：在你拥有所有权或获得明确授权的系统中进行接口调试、自动化测试、逆向分析方法论复现）。
@@ -70,6 +76,13 @@ pip install -r requirements.txt
 
 注意：程序只读取本项目目录下的 `.env`；请勿把真实密钥提交到任何代码仓库。
 
+环境变量一览：
+
+- `SILICONFLOW_API_KEY`：文案生成 API Key（不配置则回退到缓存/默认文案）
+- `CEP_CONFIG_FILE`：覆盖 `config.json` 路径（Docker/服务器推荐）
+- `CEP_CACHE_FILE`：覆盖 `content_cache.json` 路径（Docker/服务器推荐）
+- `CEP_CAPTCHA_FILE`：覆盖 `captcha.jpg` 输出路径（Docker/服务器推荐）
+
 ### 3) 配置文件
 
 建议以模板为基础创建你的本地配置：
@@ -95,6 +108,20 @@ pip install -r requirements.txt
   - `CEP_CONFIG_FILE`：配置文件路径
   - `CEP_CACHE_FILE`：文案缓存文件路径
   - `CEP_CAPTCHA_FILE`：验证码图片输出路径
+
+配置示例（最小可用）：
+
+```json
+{
+  "username": "",
+  "password": "",
+  "token": "",
+  "sso_base": "https://www.nazhisoft.com",
+  "base_url": "http://139.159.205.146:8280",
+  "upload_url": "http://doc.nazhisoft.com/common/upload/uploadImage?bussinessType=12&groupName=other",
+  "model": "deepseek-ai/DeepSeek-V3.2"
+}
+```
 
 ### 4) 准备本地资源（可选）
 
@@ -163,6 +190,13 @@ python -m comprehensive_eval_pro.main
 - 提交前 payload 预览与人工确认
 - 在非 Windows 或无桌面环境下，验证码图片不会自动弹窗，会提示保存路径以便手动查看
 
+交互指令速查：
+
+- `y`：批量处理（班会/军训/国旗下讲话/劳动）
+- `bh` / `gq` / `ld`：按关键词筛选对应任务
+- `1` 或 `1 3 5`：按序号选择单个/多个任务
+- 批量模式会询问“是否开启自动模式（跳过预览直接提交）”与“是否优先用缓存文案”
+
 再次强调：不要在未授权的第三方系统上运行。
 
 ## Docker 部署（交互式 CLI）
@@ -202,6 +236,15 @@ docker run --rm -it ^
 
 - 不需要 AI 就不要设置 `SILICONFLOW_API_KEY`，程序会提示并回退到缓存/默认文案。
 - 容器里不会自动弹出验证码图片；请按提示到 `runtime/captcha.jpg` 打开查看并手动输入。
+- 如需在容器里使用本地资源图片，可额外挂载（把宿主机的 `assets/images` 挂进去）：
+
+```bash
+docker run --rm -it ^
+  -e CEP_CONFIG_FILE=/data/config.json ^
+  -v "%cd%\\runtime:/data" ^
+  -v "%cd%\\assets\\images:/app/comprehensive_eval_pro/assets/images" ^
+  comprehensive-eval-pro:latest
+```
 
 ### 方式 B：docker compose
 
@@ -249,14 +292,6 @@ docker compose up --build
 
 请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
 
-## GitHub 仓库信息（可选）
-
-如果你在 GitHub 上新建仓库，可以在 “Edit repository details” 填：
-
-- Description：Python CLI for authorized comprehensive-evaluation workflow automation
-- Website：留空
-- Topics：python cli automation
-
 ## 安全问题反馈
 
 请阅读 [SECURITY.md](SECURITY.md)。
@@ -268,3 +303,12 @@ docker compose up --build
 ## 许可证
 
 本项目以 MIT License 发布，见 [LICENSE](LICENSE)。
+
+## 作者与联系
+
+- Wenaixi
+- cep@wenxi.dev
+
+## GitHub 仓库设置（可选）
+
+- Topics：python cli automation nazhinet 纳智网
