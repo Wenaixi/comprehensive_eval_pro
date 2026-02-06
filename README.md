@@ -83,7 +83,7 @@ pip install -r requirements.txt
 
 常用配置项（均在 `config.example.json` 中给出默认值）：
 
-- `sso_base`：SSO 登录域名（默认 `https://www.nazhisoft.com`）
+- `sso_base`：SSO 登录域名（默认纳智网 `https://www.nazhisoft.com`）
 - `base_url`：业务系统地址（注意：如为 HTTP，将有明文传输风险）
 - `upload_url`：图片上传地址
 - `model`：文案生成模型名称（仅在配置了 `SILICONFLOW_API_KEY` 时生效）
@@ -248,6 +248,14 @@ docker compose up --build
 ## 贡献
 
 请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+
+## GitHub 仓库信息（可选）
+
+如果你在 GitHub 上新建仓库，可以在 “Edit repository details” 填：
+
+- Description：Python CLI for authorized comprehensive-evaluation workflow automation
+- Website：留空
+- Topics：python cli automation
 
 ## 安全问题反馈
 
