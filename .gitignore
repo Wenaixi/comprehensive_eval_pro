@@ -36,6 +36,10 @@ content_cache*.json
 config*.json
 !config.example.json
 
+# 批量账号文件（含敏感信息）
+accounts*.txt
+!accounts.example.txt
+
 .coverage
 coverage.xml
 htmlcov/

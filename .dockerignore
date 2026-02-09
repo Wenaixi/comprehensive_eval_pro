@@ -4,9 +4,12 @@
 .venv/
 venv/
 .pytest_cache/
-.env
-config.json
-content_cache.json
-captcha.jpg
+.env*
+config*.json
+content_cache*.json
+captcha*.jpg
+captcha*.jpeg
+captcha*.png
 runtime/
 assets/images/
+accounts*.txt

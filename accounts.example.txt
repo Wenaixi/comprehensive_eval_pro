@@ -1,0 +1,4 @@
+# 每行一个账号：学号 空格 密码
+# 支持空行与以 # 开头的注释行
+20260001 your_password_here
+20260002 your_password_here

@@ -14,7 +14,19 @@ class ProFileService:
     """
     def __init__(self, session: requests.Session = None, upload_url: str = None):
         # 图片服务器与业务服务器独立，实战证明不需要 Token
-        self.session = session or requests.Session()
+        if session is None:
+            self.session = requests.Session()
+        else:
+            self.session = requests.Session()
+            try:
+                self.session.proxies = getattr(session, "proxies", {})
+                self.session.verify = getattr(session, "verify", True)
+                self.session.cert = getattr(session, "cert", None)
+                self.session.trust_env = getattr(session, "trust_env", True)
+                for prefix, adapter in getattr(session, "adapters", {}).items():
+                    self.session.mount(prefix, adapter)
+            except Exception:
+                pass
         # 修正：必须携带 bussinessType 和 groupName 参数
         self.upload_url = upload_url or "http://doc.nazhisoft.com/common/upload/uploadImage?bussinessType=12&groupName=other"
 

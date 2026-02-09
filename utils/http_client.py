@@ -76,7 +76,15 @@ def request_json(
     try:
         data = resp.json()
     except ValueError:
-        log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code})")
+        snippet = ""
+        try:
+            snippet = (resp.text or "")[:200]
+        except Exception:
+            snippet = ""
+        if snippet:
+            log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code}) body[:200]={snippet!r}")
+        else:
+            log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code})")
         return None
 
     if resp.status_code >= 400:
@@ -105,7 +113,15 @@ def request_json_response(
     try:
         data = resp.json()
     except ValueError:
-        log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code})")
+        snippet = ""
+        try:
+            snippet = (resp.text or "")[:200]
+        except Exception:
+            snippet = ""
+        if snippet:
+            log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code}) body[:200]={snippet!r}")
+        else:
+            log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code})")
         return None, resp
 
     if resp.status_code >= 400:

@@ -4,6 +4,7 @@ import logging
 import requests
 import difflib
 import re
+import unicodedata
 from urllib.parse import urlparse
 from comprehensive_eval_pro.services.content_gen import AIContentGenerator
 from comprehensive_eval_pro.services.file_service import ProFileService
@@ -91,10 +92,11 @@ class ProTaskManager:
     @classmethod
     def _looks_like_class_meeting(cls, task_name: str, dimension_name: str = "") -> bool:
         name = cls._normalize_task_name(task_name)
-        dim = dimension_name or ""
+        dim = cls._normalize_task_name(dimension_name or "")
         if "班会" in name:
             return True
-        if re.search(r"班[《“\"']", name) and ("思想" in dim or "品德" in dim or "德育" in dim):
+        dim_hit = any(k in dim for k in ("思想", "品德", "德育", "心理", "班会"))
+        if re.search(r"(?:^|[^级])班[《“\"'‘]", name) and dim_hit:
             return True
         return False
 
@@ -185,18 +187,47 @@ class ProTaskManager:
         """
         从文本中提取日期模式 (如 9.8, 09.08, 2025.9.8)
         """
-        if not text: return None
-        # 匹配 9.8 或 09.08 或 2025.9.8
-        pattern = r'(\d{1,4}\.)?(\d{1,2}\.\d{1,2})'
+        if not text:
+            return None
+        pattern = r'(\d{1,4}\.)?(\d{1,2})\.(\d{1,2})'
         match = re.search(pattern, text)
-        if match:
-            # 返回核心部分 M.D 或 MM.DD
-            return match.group(2)
-        return None
+        if not match:
+            return None
+        try:
+            return int(match.group(2)), int(match.group(3))
+        except Exception:
+            return None
+
+    @staticmethod
+    def _normalize_match_text(text: str) -> str:
+        if not text:
+            return ""
+        text = unicodedata.normalize("NFKC", text)
+        text = re.sub(r"\s+", "", text)
+        text = re.sub(r"[，,。．·!！?？:：;；“”\"'‘’《》〈〉()（）【】\[\]{}<>]", "", text)
+        return text.lower()
+
+    @classmethod
+    def _extract_quoted_title(cls, text: str) -> str:
+        if not text:
+            return ""
+        text = unicodedata.normalize("NFKC", text)
+        patterns = [
+            r"《([^》]{1,80})》",
+            r"“([^”]{1,80})”",
+            r"\"([^\"]{1,80})\"",
+            r"『([^』]{1,80})』",
+            r"「([^」]{1,80})」",
+        ]
+        for p in patterns:
+            m = re.search(p, text)
+            if m:
+                return cls._normalize_match_text(m.group(1))
+        return ""
 
     def _find_best_matching_folder(self, task_name, base_dir):
         """
-        模糊匹配最符合任务名称的文件夹 (引入日期优先策略)
+        匹配最符合任务名称的文件夹（优先按引号内容匹配）
         """
         if not os.path.exists(base_dir):
             return None
@@ -217,29 +248,30 @@ class ProTaskManager:
             return None
             
         task_date = self._extract_date(task_name)
-        logger.debug(f"任务名: {task_name}, 提取日期: {task_date}")
+        task_title = self._extract_quoted_title(task_name)
+        task_key = task_title or self._normalize_match_text(task_name)
 
-        # 1. 策略 A: 日期绝对匹配 (优先级最高)
-        if task_date:
-            for folder in folders:
-                folder_date = self._extract_date(folder)
-                if folder_date == task_date:
-                    logger.info(f"✨ 发现日期精确匹配文件夹: {folder}")
-                    return os.path.join(base_dir, folder)
-        
-        # 2. 策略 B: 直接包含匹配
+        scored = []
         for folder in folders:
-            if task_name in folder or folder in task_name:
-                return os.path.join(base_dir, folder)
-        
-        # 3. 策略 C: 相似度匹配 (兜底)
-        matches = difflib.get_close_matches(task_name, folders, n=1, cutoff=0.1)
-        if matches:
-            return os.path.join(base_dir, matches[0])
-            
-        return None
+            folder_title = self._extract_quoted_title(folder)
+            folder_key = folder_title or self._normalize_match_text(folder)
+            similarity = difflib.SequenceMatcher(None, task_key, folder_key).ratio()
+            date_match = 1 if (task_date and self._extract_date(folder) == task_date) else 0
+            scored.append((similarity, date_match, len(folder_key), folder))
 
-    def submit_task(self, task, ai_generator: AIContentGenerator, dry_run: bool = True, use_cache: bool = True):
+        scored.sort(reverse=True)
+        best = scored[0][3] if scored else None
+        return os.path.join(base_dir, best) if best else None
+
+    def submit_task(
+        self,
+        task,
+        ai_generator: AIContentGenerator,
+        dry_run: bool = True,
+        use_cache: bool = True,
+        content_override: str | None = None,
+        attachment_ids_override: list[int] | None = None,
+    ):
         """
         执行任务提交逻辑
         :param use_cache: 是否使用缓存文案
@@ -257,9 +289,10 @@ class ProTaskManager:
         is_class_meeting = self._looks_like_class_meeting(task_name, dim_name)
         
         # 2. 获取附件与内容
-        attachment_ids = []
+        attachment_ids = list(attachment_ids_override) if isinstance(attachment_ids_override, list) else []
         target_sub_dir = None
         chosen_img_path = None
+        upload_paths = []
         xls_content = ""
         
         # 确定资源目录
@@ -283,9 +316,8 @@ class ProTaskManager:
                 # 寻找图片和 Excel
                 files = os.listdir(matched_folder)
                 imgs = [os.path.join(matched_folder, f) for f in files if f.lower().endswith(self.IMAGE_EXTS)]
-                xls_files = [os.path.join(matched_folder, f) for f in files if f.lower().endswith('.xls')]
                 
-                if imgs:
+                if (not attachment_ids) and imgs:
                     chosen_img_path = random.choice(imgs)
                     logger.info(f"📸 已从资源包随机抽取照片: {os.path.basename(chosen_img_path)}")
                     if not dry_run:
@@ -293,18 +325,21 @@ class ProTaskManager:
                         if img_id: attachment_ids.append(img_id)
                     else:
                         attachment_ids.append(888888) # 预览 ID
+                        upload_paths.append(chosen_img_path)
                 
-                if xls_files:
-                    # 优先解析第一个 xls
-                    xls_content = ExcelParser.extract_text_from_xls(xls_files[0])
-                    logger.info(f"📊 已成功解析班会记录 (Excel)，提取文本长度: {len(xls_content)}")
-                else:
-                    logger.warning(f"⚠️ 资源包【{os.path.basename(matched_folder)}】内未发现 .xls 记录文件，将使用通用生成逻辑")
+                if content_override is None:
+                    from comprehensive_eval_pro.utils.record_parser import extract_first_record_text
+
+                    xls_content, used_file = extract_first_record_text(matched_folder)
+                    if xls_content:
+                        logger.info(f"📊 已成功解析班会记录，来源: {os.path.basename(used_file) if used_file else '未知'}，提取文本长度: {len(xls_content)}")
+                    else:
+                        logger.warning(f"⚠️ 资源包【{os.path.basename(matched_folder)}】内未能解析到可用记录文本，将使用任务名通用生成逻辑")
             else:
                 logger.warning(f"❌ 班会任务【{task_name}】未能匹配到任何资源包，请检查 assets/images/主题班会 目录")
 
         # 通用图片挂载 (针对专项任务)
-        if not is_class_meeting and target_sub_dir:
+        if not attachment_ids and (not is_class_meeting) and target_sub_dir:
             img_dir = os.path.join(current_dir, "assets", "images", target_sub_dir)
             if os.path.exists(img_dir):
                 imgs = [os.path.join(img_dir, f) for f in os.listdir(img_dir) if f.lower().endswith(self.IMAGE_EXTS)]
@@ -317,19 +352,23 @@ class ProTaskManager:
                             logger.info(f"成功为任务【{task_name}】从文件夹【{target_sub_dir}】挂载图片附件 ID: {img_id}")
                     else:
                         attachment_ids.append(999999) 
+                        upload_paths.append(chosen_img_path)
 
         # 3. 内容生成
-        if is_labor_task and chosen_img_path:
-            content = ai_generator.generate_labor_content(chosen_img_path, task_name, use_cache=use_cache)
-        elif is_military_task:
-            content = ai_generator.generate_military_content(task_name, use_cache=use_cache)
-        elif is_class_meeting:
-            if xls_content:
-                content = ai_generator.generate_class_meeting_content(xls_content, task_name, use_cache=use_cache)
+        if content_override is not None:
+            content = str(content_override)
+        else:
+            if is_labor_task and chosen_img_path:
+                content = ai_generator.generate_labor_content(chosen_img_path, task_name, use_cache=use_cache)
+            elif is_military_task:
+                content = ai_generator.generate_military_content(task_name, use_cache=use_cache)
+            elif is_class_meeting:
+                if xls_content:
+                    content = ai_generator.generate_class_meeting_content(xls_content, task_name, use_cache=use_cache)
+                else:
+                    content = ai_generator.generate_speech_content(task_name, use_cache=use_cache)
             else:
                 content = ai_generator.generate_speech_content(task_name, use_cache=use_cache)
-        else:
-            content = ai_generator.generate_speech_content(task_name, use_cache=use_cache)
             
         if not content:
             content = f"参加了{task_name}活动，收获颇丰。"
@@ -385,7 +424,7 @@ class ProTaskManager:
         }
 
         if dry_run:
-            return {"code": 1, "msg": "预览生成成功", "payload": payload}
+            return {"code": 1, "msg": "预览生成成功", "payload": payload, "upload_paths": upload_paths}
 
         try:
             url = f"{self.base_url}/api/studentCircleNew/addCircle"
