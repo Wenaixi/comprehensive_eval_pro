@@ -20,7 +20,7 @@ def compute_base_entries(
     elif selection == "gq":
         base_entries = [(idx, t) for idx, t in enumerate(tasks) if "国旗下讲话" in (t.get("name", "") or "")]
     elif selection == "ld":
-        # 究极统一：优先使用专业的 is_labor_task 逻辑
+        # 逻辑统一：优先使用专业的 is_labor_task 逻辑
         if is_labor_task:
             base_entries = [(idx, t) for idx, t in enumerate(tasks) if is_labor_task(t.get("name", ""), t.get("dimensionName", ""))]
         else:

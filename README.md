@@ -1,78 +1,47 @@
-# 🚀 Comprehensive Eval Pro (CEP)
-### 究极专业级·综合评价自动化破解系统
+# Comprehensive Eval Pro (CEP)
 
-[![License](https://img.shields.io/github/license/Wenaixi/comprehensive_eval_pro?style=for-the-badge&color=blue)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10+-green?style=for-the-badge&logo=python)](docs/quickstart.md)
-[![Status](https://img.shields.io/badge/Status-Ultra_Stable-orange?style=for-the-badge)](CLAUDE.md)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-117%20passed-green)](tests/)
 
-CEP 是一个为“高效、稳定、全能”而生的自动化框架。它不仅是一个工具，更是一套完整的、模块化的工程解决方案，旨在通过 AI 视觉与逻辑编排，彻底破解繁杂的综合评价流程。
+CEP 是一个模块化的自动化框架，旨在处理复杂的综合评价系统任务流。它集成了账户管理、视觉识别、资源匹配和 AI 内容生成，提供了一套完整的自动化解决方案。
 
----
+## 🛠️ 核心功能
 
-## 🌟 核心特性 (Core Features)
+- **📊 自动化审计流**: 生成结构化运行日志，确保每一步操作具备可追溯性。
+- **👁️ 视觉处理 (Vision 3.0)**: 支持 AI 模型轮询与本地 OCR (ddddocr) 的自动切换降级。
+- **📂 资源匹配引擎**: 基于五元组 `(School, Grade, Class, Task, Date)` 的资源自动对碰系统。
+- **🧠 AI 内容生成**: 自动提取本地 Excel/Word 素材语义，驱动 AI 生成任务内容。
+- **🐳 容器化支持**: 提供完整的 Docker 与 Docker Compose 部署方案。
 
-- **🧠 视觉大一统 (Vision 3.0)**: 集成 AI 多模型轮询与本地 OCR 兜底，支持 1MB 强制智能压缩与验证码智能保护。
-- **📁 路径智能感知 (Path Intelligence)**: 真正的“环境无关”运行，无论从何处启动，系统都能精准定位资源。
-- **🛡️ 究极稳健性**: 110+ 单元测试覆盖，Fail-Safe 容错机制确保批量任务绝不因个别错误而中断。
-- **📝 文案多样性**: 基于任务独立计次的 AI 内容生成，配合“任务二级菜单”，实现精细化任务管控。
-- **📊 原子化审计**: 自动生成详细的运行报告 (`runtime/summary_logs/`)，每一步操作均可回溯。
+## 📐 系统架构
 
----
-
-## 📖 文档导航 (Documentation)
-
-| 模块 | 说明 | 链接 |
-| :--- | :--- | :--- |
-| **快速上手** | 环境搭建、测试运行、基础操作 | [🚀 Quickstart](docs/quickstart.md) |
-| **账户管理** | 批量账号配置、Token 持久化、无人值守 | [🔑 Accounts](docs/accounts-and-tokens.md) |
-| **资源规则** | 图片素材、班会 Excel、目录结构规范 | [📂 Resources](docs/resources.md) |
-| **容器部署** | Docker 一键部署、镜像构建说明 | [🐳 Docker](docs/docker.md) |
-| **故障排查** | 常见问题解决、合规运行建议 | [🛠️ Troubleshooting](docs/troubleshooting.md) |
-
----
-
-## ⚡ 快速运行 (Quick Start)
-
-在确保已获得合法授权的前提下，从项目根目录运行：
-
-```powershell
-# 安装依赖
-pip install -r requirements.txt
-
-# 运行主程序
-python -m comprehensive_eval_pro
+```mermaid
+flowchart TD
+    A[OCR 请求] --> B{AI 轮询}
+    B -- 失败 --> C{本地 OCR}
+    C -- 失败 --> D[手动干预]
+    D --> E[返回结果]
+    B -- 成功 --> E
+    C -- 成功 --> E
 ```
 
-### 运行逻辑概览：
-1. **预登录**: 自动解析 `accounts.txt` 并刷新 Token 至 `configs/state.json`。
-2. **账号筛选**: 交互式菜单支持全选、反选、多选账号。
-3. **任务编排**: 
-   - 任务集：班会(bh)、军训(jx)、劳动(ld)、国旗(gq)等。
-   - 范围：仅未完成、重做已完成、全部重做。
-4. **多样性保障**: 每 3 次提交自动触发 AI 重写文案（可配置）。
+## 📖 文档中心
 
----
+| 文档名称 | 描述 |
+| :--- | :--- |
+| [快速开始](docs/quickstart.md) | 环境搭建与快速启动指南 |
+| [资源管理](docs/resources.md) | 目录结构规范与匹配算法 |
+| [身份管理](docs/accounts-and-tokens.md) | 账户导入与 Token 持久化 |
+| [Docker 部署](docs/docker.md) | 容器化运行与挂载说明 |
+| [故障排查](docs/troubleshooting.md) | 常见错误及解决方案 |
 
-## 🛠️ 配置说明 (Configuration)
+## 🚀 快速启动
 
-- `configs.example/`: 提供 `settings.example.yaml` 模板。
-- `configs/`: 存放实际配置（**敏感信息，Git 已忽略**）。
-- `accounts.txt`: 存放账号密码（**Git 已忽略**，请参考 `accounts.example.txt`）。
+1. 安装依赖：`pip install -r requirements.txt`
+2. 配置凭证：编辑 `configs/settings.yaml`
+3. 启动程序：`python -m comprehensive_eval_pro`
 
----
+## ⚖️ 许可
 
-## ⚖️ 法律与合规声明
-
-**严正声明**：本项目仅用于学习研究与安全合规的工程实践。严禁用于任何未授权的访问、批量提交或其它侵害第三方权益的行为。使用者需自行承担因不当使用产生的法律风险。
-
----
-
-## 🤝 贡献与反馈
-
-- **贡献**: 请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
-- **安全**: 发现漏洞？请查阅 [SECURITY.md](SECURITY.md)。
-- **作者**: Wenaixi ([cep@wenxi.dev](mailto:cep@wenxi.dev))
-
----
-
-> 如果这个项目对你有帮助，欢迎点个 **Star** ⭐，这是对开发者最大的鼓励。
+本项目采用 [MIT License](LICENSE) 开源。

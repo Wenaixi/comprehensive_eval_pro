@@ -87,7 +87,7 @@ class ProTaskManager:
         if self._cached_school:
             return self._cached_school
 
-        # 究极适配：定义所有可能的学校字段名
+        # 字段映射：定义所有可能的学校字段名
         possible_keys = [
             "schoolName", "SCHOOL_NAME", "school", "unitName", "UNIT_NAME", 
             "orgName", "ORG_NAME", "deptName", "DEPT_NAME", "school_name"
@@ -761,7 +761,7 @@ class ProTaskManager:
         except Exception as e:
             logger.error(f"OCR 视觉解析过程中发生异常: {e}")
         finally:
-            # 究极清理：确保临时图片在任何情况下都被删除
+            # 资源释放：确保临时图片在任何情况下都被删除
             for f in pdf_imgs:
                 try:
                     if os.path.exists(f):
@@ -963,7 +963,7 @@ class ProTaskManager:
                             from comprehensive_eval_pro.utils.record_parser import extract_first_record_text
                             xls_content, used_file = extract_first_record_text(matched_folder)
                             
-                            # 究极修正：如果返回的是 PDF 占位符或者为空，则触发真正的视觉 OCR
+                            # 逻辑触发：如果返回的是 PDF 占位符或者为空，则触发真正的视觉 OCR
                             if not xls_content or xls_content == "[PDF记录: 待视觉解析]":
                                 logger.info(f"未发现文本记录文件或仅发现 PDF，尝试视觉解析...")
                                 xls_content = self._get_content_from_pdf_via_ocr(matched_folder, task_name, ai_generator)

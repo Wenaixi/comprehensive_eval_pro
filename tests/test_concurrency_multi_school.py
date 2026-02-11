@@ -15,7 +15,7 @@ from comprehensive_eval_pro.config_store import load_json_config, save_json_conf
 
 class TestConcurrencyMultiSchool(unittest.TestCase):
     """
-    究极深度并发测试：模拟多学校、多账号、多线程的高并发场景。
+    深度并发测试：模拟多学校、多账号、多线程的高并发场景。
     验证：
     1. 目录创建的原子性（多线程同时创建相同或不同目录）。
     2. 日志写入的线程安全性（跨文件与同文件混合）。

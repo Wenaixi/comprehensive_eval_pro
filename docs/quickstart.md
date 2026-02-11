@@ -1,73 +1,57 @@
-# 🚀 快速开始
+# 快速开始 (Quickstart)
 
-本指南将带你快速搭建 CEP 运行环境。请确保你已获得相关系统的合法授权。
+本指南将帮助您快速搭建 CEP 环境并启动自动化任务。
 
-## 🛠️ 1. 环境准备
+## 1. 环境准备
 
 - **Python**: 3.10+ (推荐 3.12)
-- **操作系统**: Windows (推荐 PowerShell) / Linux / macOS
+- **依赖安装**:
+  ```powershell
+  pip install -r requirements.txt
+  ```
 
-### 安装步骤
+## 2. 核心配置
 
-```powershell
-# 克隆/下载项目后进入根目录
-cd comprehensive_eval_pro
+1. **凭证配置**: 在 `configs/settings.yaml` 中配置 API Key 与登录凭证。
+2. **账户导入**: 将待处理账户填入 `data/accounts.txt`，格式为 `账号 密码`。
+3. **资源放置**: 按照分类（如 `主题班会`）将素材放入 `assets/` 对应层级。
 
-# 创建并激活虚拟环境 (可选但推荐)
-python -m venv .venv
-.\.venv\Scripts\activate  # Windows
-source .venv/bin/activate # Linux/macOS
+## 3. 启动流程
 
-# 安装依赖
-pip install -r requirements.txt
-```
-
-> **💡 提示**：Python 3.12 用户如遇 `ddddocr` 安装问题，请指定版本 `pip install ddddocr==1.5.6`。
-
----
-
-## ⚙️ 2. 配置初始化
-
-CEP 采用“动静分离”的配置体系，确保你的凭据安全。
-
-1. **自动初始化**: 首次运行 `python -m comprehensive_eval_pro` 时，系统会自动从 `configs.example/` 复制模板。
-2. **手动配置**:
-   - `configs/settings.yaml`: 修改 `siliconflow_api_key` 以启用 AI 能力。
-   - `accounts.txt`: 参考 `accounts.example.txt` 填入学号与密码。
-
----
-
-## 🏃 3. 启动程序
-
-得益于 **路径智能感知 (Path Intelligence)**，你现在可以在任何位置启动项目，而无需担心路径错误。
-
-### 推荐启动方式
-从项目根目录运行：
+### 本地启动
 ```powershell
 python -m comprehensive_eval_pro
 ```
 
-### 运行流程详解
-1. **预登录阶段**: 自动检测所有账号状态，有效 Token 直接复用，失效则自动触发 OCR 登录。
-2. **账号选择**: 交互式勾选目标账号。
-3. **任务下发**: 选择任务类型（班会/军训等）及范围（未完成/全部）。
-4. **自动化执行**: 自动匹配资源、AI 生成内容并提交，结果实时记录在 `runtime/summary_logs/`。
-
----
-
-## 🧪 4. 验证与测试
-
-在正式运行前，强烈建议执行自动化测试以确保一切正常：
-
+### 验证启动 (推荐)
+首次运行建议先执行测试套件：
 ```powershell
-# 运行所有单元测试
-pytest -v
+pytest tests/
 ```
 
----
+## 4. 关键目录说明
 
-## 📂 5. 核心目录速览
+- `/assets`: 存放任务素材（按分类、学校、年级、班级分层）。
+- `/configs`: 存放静态配置 `settings.yaml` 与动态状态 `state.json`。
+- `/data`: 存放账户列表 `accounts.txt`。
+- `/logs`: 存放运行审计日志。
 
-- `assets/`: 存放你的图片和文档资源。
-- `configs/`: 你的私人配置中心。
-- `runtime/`: 系统运行时的输出（日志、缓存、临时图片）。
+## 5. 任务过滤与范围 (Mode & Scope)
+
+系统支持通过配置文件或命令行参数精细控制执行范围：
+
+- **Scope (执行范围)**:
+  - `pending`: 仅处理未完成的任务（默认）。
+  - `done`: 仅处理已完成的任务。
+  - `all`: 全量处理。
+- **Selection (任务选择)**:
+  - `bh`: 仅处理主题班会。
+  - `ld`: 仅处理劳动任务。
+  - `jx`: 仅处理军训任务。
+  - `gq`: 仅处理国旗下讲话。
+  - `indices`: 处理指定索引的任务。
+
+## 6. 常见操作
+
+- **清理缓存**: 删除 `configs/state.json` 即可重置运行状态。
+- **强制同步**: 修改 `default_task_mode` 为 `all` 可强制重新提交任务。

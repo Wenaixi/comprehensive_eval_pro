@@ -183,7 +183,7 @@ class ProAuthService:
             if not isinstance(data, dict) or res is None:
                 return False
             if data.get('code') == 1:
-                # 增强 Token 捕获逻辑 (究极进化版：支持根目录、returnData 嵌套、Headers 捕获)
+                # 增强 Token 捕获逻辑 (支持根目录、returnData 嵌套、Headers 捕获)
                 # 1. 尝试从根目录获取
                 token = data.get('token') or data.get('data')
                 

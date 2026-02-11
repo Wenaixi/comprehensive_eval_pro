@@ -1,13 +1,29 @@
 services:
-  app:
-    build: .
+  cep-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cep-system
     image: comprehensive-eval-pro:latest
+    # 必须开启交互模式，以便进行账号勾选和任务选择
     stdin_open: true
     tty: true
-    environment:
-      SILICONFLOW_API_KEY: ${SILICONFLOW_API_KEY:-}
-      CEP_CONFIG_FILE: /data/config.json
-      CEP_CACHE_FILE: /data/content_cache.json
-      CEP_CAPTCHA_FILE: /data/captcha.jpg
+    # 路径映射：实现宿主机与容器的数据同步
     volumes:
-      - ./runtime:/data
+      # 挂载配置目录 (动静分离)
+      - ./configs:/app/comprehensive_eval_pro/configs
+      # 挂载资源目录 (图片/Excel)
+      - ./assets:/app/comprehensive_eval_pro/assets
+      # 挂载运行时目录 (日志/缓存)
+      - ./runtime:/app/comprehensive_eval_pro/runtime
+      # 挂载账号文件
+      - ./accounts.txt:/app/comprehensive_eval_pro/accounts.txt
+    # 环境变量：优先于 settings.yaml，适合 CI/CD 或临时调试
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CEP_SILICONFLOW_API_KEY=${CEP_SILICONFLOW_API_KEY:-}
+    restart: unless-stopped
+
+networks:
+  default:
+    name: cep-network

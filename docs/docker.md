@@ -1,66 +1,42 @@
-# 🐳 Docker 部署指南
+# Docker 部署指南
 
-CEP 提供官方 Docker 支持，旨在解决跨环境运行的依赖与配置一致性问题。
+本系统支持通过 Docker 进行容器化部署，确保环境一致性。
 
----
+## 1. 快速启动
 
-## 🚀 1. 快速构建与运行
+在项目根目录下执行部署脚本：
+```powershell
+./deploy.ps1
+```
 
-### 构建镜像
+或者手动执行 Compose 命令：
 ```bash
-docker build -t cep:latest .
+docker-compose up -d --build
 ```
 
-### 推荐启动命令 (交互式)
+## 2. 卷挂载 (Volumes) 说明
+
+为实现数据持久化，以下目录需挂载至宿主机：
+
+- `/app/configs`: 存放 `settings.yaml` 配置文件。
+- `/app/assets`: 存放任务素材。
+- `/app/logs`: 存放审计日志。
+- `/app/storage`: 存放运行状态与 Token。
+- `/app/data`: 存放账户列表。
+
+## 3. 容器管理
+
+### 查看日志
 ```bash
-docker run --rm -it \
-  -v "$(pwd)/configs:/app/comprehensive_eval_pro/configs" \
-  -v "$(pwd)/runtime:/app/comprehensive_eval_pro/runtime" \
-  -v "$(pwd)/assets:/app/comprehensive_eval_pro/assets" \
-  cep:latest
+docker logs -f cep-app
 ```
 
----
-
-## 📂 2. 卷挂载说明 (Volumes)
-
-| 容器路径 | 宿主机路径 (建议) | 作用 |
-| :--- | :--- | :--- |
-| `/app/comprehensive_eval_pro/configs` | `./configs` | 持久化 Token 和配置文件 |
-| `/app/comprehensive_eval_pro/runtime` | `./runtime` | 查看运行日志和调试信息 |
-| `/app/comprehensive_eval_pro/assets` | `./assets` | 提供本地图片和文档素材 |
-
----
-
-## 🛠️ 3. Docker Compose (多任务编排)
-
-使用项目根目录下的 `docker-compose.yml` 快速启动：
-
-```yaml
-version: '3.8'
-services:
-  cep:
-    build: .
-    volumes:
-      - ./configs:/app/comprehensive_eval_pro/configs
-      - ./runtime:/app/comprehensive_eval_pro/runtime
-    environment:
-      - SILICONFLOW_API_KEY=${SILICONFLOW_API_KEY}
-    stdin_open: true
-    tty: true
-```
-
-运行命令：
+### 进入交互式终端
 ```bash
-docker-compose up --build
+docker exec -it cep-app /bin/bash
 ```
 
----
+## 4. 注意事项
 
-## ❓ 常见问题
-
-### 网络受限导致构建失败
-如果在拉取 `python:3.12-slim` 时遇到超时，请尝试配置 Docker 镜像加速器或检查代理设置。
-
-### 交互模式问题
-在 Windows CMD 下运行 Docker 时，如果无法输入验证码，请确保使用了 `-it` 参数并尝试在 PowerShell 中运行。
+- **时区配置**: 容器默认使用 UTC 时区，若需同步本地时间，请在 `docker-compose.yml` 中配置 `TZ` 环境变量。
+- **资源限制**: 建议为容器分配至少 1GB 内存，以应对大文件 OCR 解析。

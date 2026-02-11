@@ -816,7 +816,7 @@ def _main_impl():
     )
 
     selectable = [i for i, a in enumerate(prepared_accounts) if a.get("status") == "已就绪"]
-    selected = set()  # 究极修复：默认不选中任何账号，由用户决定
+    selected = set()  # 默认不选中任何账号，由用户决定
     while True:
         _print_accounts_table(prepared_accounts, config)
         generate_resource_health_report(prepared_accounts)
