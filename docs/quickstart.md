@@ -1,64 +1,73 @@
-# 快速开始（仅本地学习/测试）
+# 🚀 快速开始
 
-## 1) Python 环境
+本指南将带你快速搭建 CEP 运行环境。请确保你已获得相关系统的合法授权。
 
-- 推荐：Python 3.12+
-- Windows / PowerShell
+## 🛠️ 1. 环境准备
 
-安装依赖：
+- **Python**: 3.10+ (推荐 3.12)
+- **操作系统**: Windows (推荐 PowerShell) / Linux / macOS
 
-```bash
+### 安装步骤
+
+```powershell
+# 克隆/下载项目后进入根目录
+cd comprehensive_eval_pro
+
+# 创建并激活虚拟环境 (可选但推荐)
 python -m venv .venv
-.\.venv\Scripts\activate
+.\.venv\Scripts\activate  # Windows
+source .venv/bin/activate # Linux/macOS
+
+# 安装依赖
 pip install -r requirements.txt
 ```
 
-依赖提示：
+> **💡 提示**：Python 3.12 用户如遇 `ddddocr` 安装问题，请指定版本 `pip install ddddocr==1.5.6`。
 
-- Python 3.12 环境下建议使用 `ddddocr==1.5.6`，避免兼容性问题。
-- 班会 Excel 解析依赖 `pandas` + `xlrd`（已包含在 requirements.txt）。
+---
 
-## 2) 环境变量（可选）
+## ⚙️ 2. 配置初始化
 
-- 复制 `.env.example` 为 `.env`
-- 按需填写
+CEP 采用“动静分离”的配置体系，确保你的凭据安全。
 
-说明：`.env.example` 里每个变量前都有逐项解释。
+1. **自动初始化**: 首次运行 `python -m comprehensive_eval_pro` 时，系统会自动从 `configs.example/` 复制模板。
+2. **手动配置**:
+   - `configs/settings.yaml`: 修改 `siliconflow_api_key` 以启用 AI 能力。
+   - `accounts.txt`: 参考 `accounts.example.txt` 填入学号与密码。
 
-## 3) 配置文件
+---
 
-建议以模板为基础创建你的本地配置：
+## 🏃 3. 启动程序
 
-- 复制 `config.example.json` 为 `config.json`
-- 按需填写 `model`、`username`、`password` 等
+得益于 **路径智能感知 (Path Intelligence)**，你现在可以在任何位置启动项目，而无需担心路径错误。
 
-提醒：账号、密码、token、用户信息等属于敏感数据，`config.json` 默认被 `.gitignore` 忽略。
-
-## 4) 运行单元测试（推荐）
-
-在仓库根目录执行：
-
-```bash
-python -m unittest -q
-```
-
-如果你安装了 `pytest`：
-
-```bash
-pytest -q
-```
-
-## 5) 交互式入口（谨慎）
-
-仅在你获得授权的环境中做联调时运行：
-
-```bash
-cd ..
+### 推荐启动方式
+从项目根目录运行：
+```powershell
 python -m comprehensive_eval_pro
 ```
 
-当前入口默认按“多账号批量”模式运行：会读取 `accounts.txt`（或 `CEP_ACCOUNTS_FILE` 指定路径），逐个账号执行任务流程。
-多账号流程会先对所有账号执行预登录并把 token/user_info 写入 `config.json`，再进入账号选择（全选/反选/追加/移除）。
-任务选择改为二级菜单：先选任务集合（y/bh/gq/ld/jx/序号），再选处理范围（只处理未完成/重做已完成/全部重做）。
-文案多样性计次按“任务名”独立统计：默认每 3 次提交强制生成 1 次新文案（其余走缓存），可用 `CEP_DIVERSITY_EVERY` 调整。
-每个账号会生成 1 份简洁日志（默认输出到 `runtime/summary_logs/`，可用 `CEP_SUMMARY_LOG_DIR` 覆盖）。
+### 运行流程详解
+1. **预登录阶段**: 自动检测所有账号状态，有效 Token 直接复用，失效则自动触发 OCR 登录。
+2. **账号选择**: 交互式勾选目标账号。
+3. **任务下发**: 选择任务类型（班会/军训等）及范围（未完成/全部）。
+4. **自动化执行**: 自动匹配资源、AI 生成内容并提交，结果实时记录在 `runtime/summary_logs/`。
+
+---
+
+## 🧪 4. 验证与测试
+
+在正式运行前，强烈建议执行自动化测试以确保一切正常：
+
+```powershell
+# 运行所有单元测试
+pytest -v
+```
+
+---
+
+## 📂 5. 核心目录速览
+
+- `assets/`: 存放你的图片和文档资源。
+- `configs/`: 你的私人配置中心。
+- `runtime/`: 系统运行时的输出（日志、缓存、临时图片）。

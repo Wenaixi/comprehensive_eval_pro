@@ -63,6 +63,7 @@ def request_json(
     *,
     timeout: int = DEFAULT_TIMEOUT,
     logger: Optional[logging.Logger] = None,
+    strict: bool = True,
     **kwargs: Any,
 ) -> Optional[Any]:
     log = logger or logging.getLogger(__name__)
@@ -71,6 +72,10 @@ def request_json(
         resp = session.request(method=method, url=url, timeout=timeout, **kwargs)
     except requests.RequestException as e:
         log.error(f"HTTP 请求失败: {method} {url} ({e})")
+        return None
+
+    if strict and resp.status_code >= 400:
+        log.error(f"HTTP 响应错误(严格模式): {method} {url} (status={resp.status_code})")
         return None
 
     try:
@@ -87,7 +92,7 @@ def request_json(
             log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code})")
         return None
 
-    if resp.status_code >= 400:
+    if not strict and resp.status_code >= 400:
         log.error(f"HTTP 响应错误: {method} {url} (status={resp.status_code})")
 
     return data
@@ -100,6 +105,7 @@ def request_json_response(
     *,
     timeout: int = DEFAULT_TIMEOUT,
     logger: Optional[logging.Logger] = None,
+    strict: bool = True,
     **kwargs: Any,
 ) -> tuple[Optional[Any], Optional[requests.Response]]:
     log = logger or logging.getLogger(__name__)
@@ -109,6 +115,10 @@ def request_json_response(
     except requests.RequestException as e:
         log.error(f"HTTP 请求失败: {method} {url} ({e})")
         return None, None
+
+    if strict and resp.status_code >= 400:
+        log.error(f"HTTP 响应错误(严格模式): {method} {url} (status={resp.status_code})")
+        return None, resp
 
     try:
         data = resp.json()
@@ -124,7 +134,7 @@ def request_json_response(
             log.error(f"HTTP 响应非 JSON: {method} {url} (status={resp.status_code})")
         return None, resp
 
-    if resp.status_code >= 400:
+    if not strict and resp.status_code >= 400:
         log.error(f"HTTP 响应错误: {method} {url} (status={resp.status_code})")
 
     return data, resp

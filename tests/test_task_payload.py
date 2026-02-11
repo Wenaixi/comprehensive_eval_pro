@@ -14,7 +14,7 @@ class TestTaskPayload(unittest.TestCase):
         self.mgr = ProTaskManager(
             token="dummy",
             base_url="http://example.com",
-            user_info={"studentSchoolInfo": {"gradeName": "高一", "className": "八班"}},
+            user_info={"studentSchoolInfo": {"schoolName": "福清一中", "gradeName": "高一", "className": "八班"}},
             upload_url="http://example.com/upload",
         )
 
@@ -58,4 +58,3 @@ class TestTaskPayload(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

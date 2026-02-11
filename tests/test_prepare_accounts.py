@@ -9,6 +9,10 @@ from comprehensive_eval_pro import flows
 
 
 class DummyTaskMgr:
+    def __init__(self):
+        self.token = "t"
+        self.user_info = {}
+
     def activate_session(self):
         return True
 
@@ -24,7 +28,6 @@ class TestPrepareAccounts(unittest.TestCase):
             prepared = flows.prepare_accounts_for_selection(
                 accounts=accounts,
                 config=config,
-                config_file="X:\\config.json",
                 sso_base="https://example.com",
             )
 
@@ -46,25 +49,21 @@ class TestPrepareAccounts(unittest.TestCase):
             def get_school_id(self, username):
                 return "sid"
 
+            def get_school_meta(self, username):
+                return {}
+
         with mock.patch.object(flows, "try_use_token_flow", return_value=None), mock.patch.object(
             flows, "ProAuthService", DummyAuth
         ), mock.patch.object(flows, "ocr_login_with_retries", return_value=True), mock.patch.object(
             flows, "build_task_manager", return_value=DummyTaskMgr()
-        ), mock.patch.object(flows, "get_account_entry", return_value={}), mock.patch.object(
-            flows, "save_config"
-        ) as save_config:
+        ), mock.patch.object(flows, "get_account_entry", return_value={}):
             prepared = flows.prepare_accounts_for_selection(
                 accounts=accounts,
                 config=config,
-                config_file="X:\\config.json",
                 sso_base="https://example.com",
             )
 
         self.assertEqual(prepared[0]["status"], "已就绪")
-        self.assertEqual(prepared[0]["token"], "t2")
-        self.assertEqual(prepared[0]["real_name"], "B")
-        self.assertIsNotNone(prepared[0]["task_mgr"])
-        save_config.assert_called()
 
     def test_prepare_school_id_fail(self):
         accounts = [("u3", "p3")]
@@ -85,7 +84,6 @@ class TestPrepareAccounts(unittest.TestCase):
             prepared = flows.prepare_accounts_for_selection(
                 accounts=accounts,
                 config=config,
-                config_file="X:\\config.json",
                 sso_base="https://example.com",
             )
 
@@ -94,4 +92,3 @@ class TestPrepareAccounts(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -11,5 +11,5 @@ captcha*.jpg
 captcha*.jpeg
 captcha*.png
 runtime/
-assets/images/
+assets/
 accounts*.txt

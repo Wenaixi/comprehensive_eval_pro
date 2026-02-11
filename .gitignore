@@ -33,6 +33,9 @@ Desktop.ini
 
 content_cache*.json
 
+# 配置与状态
+configs/
+!configs.example/
 config*.json
 !config.example.json
 
@@ -50,11 +53,15 @@ htmlcov/
 *.swo
 
 # 本地资源（仅保留目录结构，不提交具体文件）
-assets/images/劳动/**
-!assets/images/劳动/.gitkeep
-assets/images/军训/**
-!assets/images/军训/.gitkeep
-assets/images/国旗下讲话/**
-!assets/images/国旗下讲话/.gitkeep
-assets/images/主题班会/**
-!assets/images/主题班会/.gitkeep
+assets/劳动/**
+!assets/劳动/**/.gitkeep
+assets/军训/**
+!assets/军训/**/.gitkeep
+assets/国旗下讲话/**
+!assets/国旗下讲话/**/.gitkeep
+assets/主题班会/**
+!assets/主题班会/**/.gitkeep
+
+# Trae 规范与记忆文件
+.trae/
+CLAUDE.md

@@ -4,15 +4,20 @@ from . import config_store as _config_store
 from . import flows as _flows
 from . import policy as _policy
 
-CONFIG_FILE, CONFIG_EXAMPLE_FILE = _config_store.default_config_paths()
-
+# 导出新配置单例
+config = _policy.config
 
 def load_config():
-    return _config_store.load_config(CONFIG_FILE, CONFIG_EXAMPLE_FILE)
+    """保持向前兼容：获取当前状态"""
+    return config.state
 
-
-def save_config(config: dict):
-    return _config_store.save_config(config, CONFIG_FILE)
+def save_config(config_dict: dict):
+    """保持向前兼容：保存当前状态"""
+    # 如果传入的 config_dict 不是当前的 state，则更新它（虽然不推荐这样做）
+    if config_dict is not config.state:
+        config.state.clear()
+        config.state.update(config_dict)
+    return config.save_state()
 
 
 load_accounts_from_txt = _config_store.load_accounts_from_txt

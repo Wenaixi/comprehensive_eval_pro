@@ -1,45 +1,62 @@
-# 批量账号与会话（Token）
+# 🔑 账户与会话管理
 
-## 1) 批量账号文件在哪？
+CEP 支持大规模账户的批量管理与状态持久化。
 
-- 默认：项目目录下的 `accounts.txt`
-- 模板：`accounts.example.txt`
-- 可通过环境变量覆盖默认路径：`CEP_ACCOUNTS_FILE`
+---
 
-格式：每行 `学号 空格 密码`；支持空行与 `#` 注释行。
+## 📝 1. 批量账号配置
 
-## 2) Token 如何持久化？
+- **默认文件**: `accounts.txt` (位于项目根目录)。
+- **模板参考**: `accounts.example.txt`。
+- **自定义路径**: 在 `configs/settings.yaml` 中通过 `accounts_file` 指定。
 
-程序会把每个账号的 `token` 和 `user_info` 存在 `config.json` 的 `accounts` 字段里（按学号索引），示意：
+### 格式要求
+每行一个账号，格式为 `学号 密码`，中间用空格分隔：
+```text
+G350181200912110035 689050
+# 支持以 # 开头的注释
+G350181200912110036 123456
+```
 
+---
+
+## 💾 2. Token 持久化机制
+
+为了减少登录频率并规避验证码风险，系统会自动将登录成功的 Token 持久化到 `configs/state.json`。
+
+### 状态存储结构
 ```json
 {
   "accounts": {
-    "20260001": { "token": "...", "user_info": { } },
-    "20260002": { "token": "...", "user_info": { } }
+    "学号": {
+      "token": "JWT_TOKEN_HERE",
+      "user_info": { "name": "张三", "school": "..." },
+      "last_update": "2026-02-11T..."
+    }
   }
 }
 ```
 
-## 3) 批量模式登录顺序
+---
 
-对账号文件里所有账号，程序会先做“预登录/持久化”，再让你选择要处理哪些账号：
+## 🔄 3. 预登录流程 (Pre-Login)
 
-1. 读取该账号的持久化 token，尝试激活会话并拉任务列表验证
-2. token 有效：标记为“已就绪”
-3. token 无效/不存在：使用账号文件里的密码登录
-   - 若安装了 `ddddocr` 则自动识别验证码
-   - 否则会保存验证码图片并提示你手动输入验证码
-4. 登录成功：把 token 与 user_info 写入 `config.json`，标记为“已就绪”
-5. 预登录结束后展示账号列表（含姓名/Token/状态），支持多选（全选/反选/追加/移除）
-6. 后续任务操作只会应用到你选中的账号集合
+每次启动程序，CEP 都会执行以下“究极”预登录逻辑：
 
-## 4) 无人值守批量跑（可选）
+1. **缓存检测**: 检查 `state.json` 中是否有该账号的 Token。
+2. **有效性验证**: 携带 Token 尝试拉取任务列表。
+3. **静默复用**: 若 Token 有效，标记为“已就绪”，跳过登录。
+4. **自动重连**: 若 Token 失效，使用 `accounts.txt` 中的密码执行登录，并更新缓存。
 
-把默认任务选择与自动提交开关写进 `.env`：
+---
 
-- `CEP_DEFAULT_TASK_MODE=y`：默认跑四大专项
-- `CEP_AUTO_MODE=1`：默认跳过预览直接提交
-- `CEP_AUTO_CONFIRM_RESUBMIT=1`：默认确认重交
+## 🤖 4. 无人值守模式 (Headless Mode)
 
-更多变量解释见 `.env.example`。
+如果你希望全自动运行，可以在 `configs/settings.yaml` 中开启以下选项：
+
+```yaml
+# 自动模式开关
+auto_mode: true              # 跳过预览，直接提交
+auto_confirm_resubmit: true  # 自动确认重交
+default_task_mode: "y"       # 默认运行四大专项任务
+```

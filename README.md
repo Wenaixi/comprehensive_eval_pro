@@ -1,72 +1,78 @@
-# Comprehensive Eval Pro（综合评价自动化系统）
+# 🚀 Comprehensive Eval Pro (CEP)
+### 究极专业级·综合评价自动化破解系统
 
-[![License](https://img.shields.io/github/license/Wenaixi/comprehensive_eval_pro?style=flat)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.12%2B-blue?style=flat)](docs/quickstart.md)
+[![License](https://img.shields.io/github/license/Wenaixi/comprehensive_eval_pro?style=for-the-badge&color=blue)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10+-green?style=for-the-badge&logo=python)](docs/quickstart.md)
+[![Status](https://img.shields.io/badge/Status-Ultra_Stable-orange?style=for-the-badge)](CLAUDE.md)
 
-## 重要声明（请先阅读）
+CEP 是一个为“高效、稳定、全能”而生的自动化框架。它不仅是一个工具，更是一套完整的、模块化的工程解决方案，旨在通过 AI 视觉与逻辑编排，彻底破解繁杂的综合评价流程。
 
-本项目仅用于学习研究与安全合规的工程实践（例如：在你拥有所有权或获得明确授权的系统中进行接口调试、自动化测试、逆向分析方法论复现）。
+---
 
-严禁用于任何未授权的访问、绕过认证、批量提交、数据抓取或其它可能侵害第三方权益的行为。使用者需自行确保：
+## 🌟 核心特性 (Core Features)
 
-- 仅在**合法合规**且**获得授权**的环境中运行。
-- 仅使用你本人账号与数据，避免对真实业务造成影响。
-- 充分理解自动化请求可能触发风控、封禁或法律风险。
+- **🧠 视觉大一统 (Vision 3.0)**: 集成 AI 多模型轮询与本地 OCR 兜底，支持 1MB 强制智能压缩与验证码智能保护。
+- **📁 路径智能感知 (Path Intelligence)**: 真正的“环境无关”运行，无论从何处启动，系统都能精准定位资源。
+- **🛡️ 究极稳健性**: 110+ 单元测试覆盖，Fail-Safe 容错机制确保批量任务绝不因个别错误而中断。
+- **📝 文案多样性**: 基于任务独立计次的 AI 内容生成，配合“任务二级菜单”，实现精细化任务管控。
+- **📊 原子化审计**: 自动生成详细的运行报告 (`runtime/summary_logs/`)，每一步操作均可回溯。
 
-如果你不确定是否有授权，请不要运行。
+---
 
-## 文档导航
+## 📖 文档导航 (Documentation)
 
-- [docs/README.md](docs/README.md)：文档入口（目录）
-- [docs/quickstart.md](docs/quickstart.md)：快速开始（安装/测试/运行）
-- [docs/accounts-and-tokens.md](docs/accounts-and-tokens.md)：批量账号、Token 持久化与无人值守
-- [docs/resources.md](docs/resources.md)：本地资源目录（图片/班会 Excel）规则
-- [docs/docker.md](docs/docker.md)：Docker 运行
-- [docs/troubleshooting.md](docs/troubleshooting.md)：排障与合规建议
+| 模块 | 说明 | 链接 |
+| :--- | :--- | :--- |
+| **快速上手** | 环境搭建、测试运行、基础操作 | [🚀 Quickstart](docs/quickstart.md) |
+| **账户管理** | 批量账号配置、Token 持久化、无人值守 | [🔑 Accounts](docs/accounts-and-tokens.md) |
+| **资源规则** | 图片素材、班会 Excel、目录结构规范 | [📂 Resources](docs/resources.md) |
+| **容器部署** | Docker 一键部署、镜像构建说明 | [🐳 Docker](docs/docker.md) |
+| **故障排查** | 常见问题解决、合规运行建议 | [🛠️ Troubleshooting](docs/troubleshooting.md) |
 
-## 怎么运行（本地）
+---
 
-在你获得授权的环境中，从 `comprehensive_eval_pro` 的上一级目录运行：
+## ⚡ 快速运行 (Quick Start)
 
-```bash
+在确保已获得合法授权的前提下，从项目根目录运行：
+
+```powershell
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行主程序
 python -m comprehensive_eval_pro
 ```
 
-运行时会：
+### 运行逻辑概览：
+1. **预登录**: 自动解析 `accounts.txt` 并刷新 Token 至 `configs/state.json`。
+2. **账号筛选**: 交互式菜单支持全选、反选、多选账号。
+3. **任务编排**: 
+   - 任务集：班会(bh)、军训(jx)、劳动(ld)、国旗(gq)等。
+   - 范围：仅未完成、重做已完成、全部重做。
+4. **多样性保障**: 每 3 次提交自动触发 AI 重写文案（可配置）。
 
-- 先读取 `accounts.txt`（或 `CEP_ACCOUNTS_FILE` 指定路径），对所有账号执行预登录并把 token/user_info 写入 `config.json`
-- 再展示账号列表并支持多选（全选/反选/追加/移除），后续操作只应用到所选账号集合
-- 再进入“任务二级菜单”：先选任务集合（y/bh/gq/ld/jx/序号），再选处理范围（完成未完成/重做已完成/全部重做）
-- 文案多样性按“任务名”独立计次：默认每 3 次提交强制生成 1 次新文案（可用 `CEP_DIVERSITY_EVERY` 调整）
-- 每个账号会输出 1 份简洁日志（默认：`runtime/summary_logs/`，可用 `CEP_SUMMARY_LOG_DIR` 覆盖）
+---
 
-## 常用文件
+## 🛠️ 配置说明 (Configuration)
 
-- `.env.example`：环境变量（每个变量前有详细解释；复制为 `.env` 使用）
-- `config.example.json`：配置模板（复制为 `config.json`）
-- `accounts.example.txt`：批量账号文件模板（复制为 `accounts.txt`）
+- `configs.example/`: 提供 `settings.example.yaml` 模板。
+- `configs/`: 存放实际配置（**敏感信息，Git 已忽略**）。
+- `accounts.txt`: 存放账号密码（**Git 已忽略**，请参考 `accounts.example.txt`）。
 
-## 贡献
+---
 
-请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+## ⚖️ 法律与合规声明
 
-## 安全问题反馈
+**严正声明**：本项目仅用于学习研究与安全合规的工程实践。严禁用于任何未授权的访问、批量提交或其它侵害第三方权益的行为。使用者需自行承担因不当使用产生的法律风险。
 
-请阅读 [SECURITY.md](SECURITY.md)。
+---
 
-## 免责声明
+## 🤝 贡献与反馈
 
-见 [DISCLAIMER.md](DISCLAIMER.md)。
+- **贡献**: 请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+- **安全**: 发现漏洞？请查阅 [SECURITY.md](SECURITY.md)。
+- **作者**: Wenaixi ([cep@wenxi.dev](mailto:cep@wenxi.dev))
 
-## 许可证
+---
 
-本项目以 MIT License 发布，见 [LICENSE](LICENSE)。
-
-## 作者与联系
-
-- Wenaixi
-- cep@wenxi.dev
-
-## 支持
-
-如果这个项目对你有帮助，欢迎点个 Star。
+> 如果这个项目对你有帮助，欢迎点个 **Star** ⭐，这是对开发者最大的鼓励。

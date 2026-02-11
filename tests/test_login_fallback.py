@@ -9,34 +9,34 @@ from comprehensive_eval_pro import flows
 
 
 class TestLoginFallback(unittest.TestCase):
-    def test_manual_captcha_fallback_when_no_ocr(self):
+    def test_manual_captcha_fallback_on_auto_failure(self):
         auth = mock.Mock()
-        auth.ocr = None
-        auth.get_captcha.return_value = ("X:\\tmp\\captcha.jpg", "")
-        auth.login.return_value = True
+        # 模拟自动识别总是返回错误验证码
+        auth.get_captcha.return_value = ("X:\\tmp\\captcha.jpg", "wrong")
+        auth.login.return_value = False
+        
+        # 模拟手动登录成功
+        def login_side_effect(u, p, code, school_id=None):
+            return code == "manual_code"
+        auth.login.side_effect = login_side_effect
 
-        with mock.patch("builtins.input", return_value="abcd"):
-            ok = flows.ocr_login_with_retries(auth, "u", "p", "sid", max_retries=3)
+        with mock.patch("comprehensive_eval_pro.flows.get_ocr_max_retries", return_value=1):
+            with mock.patch("comprehensive_eval_pro.flows.get_manual_ocr_max_retries", return_value=1):
+                # 第一次 get_captcha 是自动
+                # 第二次 get_captcha 是手动
+                auth.get_captcha.side_effect = [
+                    ("X:\\tmp\\captcha.jpg", "wrong"),
+                    ("X:\\tmp\\captcha.jpg", "")
+                ]
+                with mock.patch("builtins.input", return_value="manual_code"):
+                    ok = flows.ocr_login_with_retries(auth, "u", "p", "sid")
 
         self.assertTrue(ok)
-        auth.get_captcha.assert_called()
-        auth.get_captcha.assert_called_with(auto_open=True)
-        auth.login.assert_called_with("u", "p", "abcd", school_id="sid")
-
-    def test_ocr_fail_then_manual_fallback(self):
-        auth = mock.Mock()
-        auth.ocr = object()
-
-        auth.get_captcha.side_effect = [("X:\\tmp\\captcha.jpg", "bad")] * 10 + [("X:\\tmp\\captcha.jpg", "")]
-        auth.login.side_effect = [False] * 10 + [True]
-
-        with mock.patch("builtins.input", return_value="good"):
-            ok = flows.ocr_login_with_retries(auth, "u", "p", "sid", max_retries=10)
-
-        self.assertTrue(ok)
-        self.assertEqual(auth.get_captcha.call_count, 11)
-        auth.get_captcha.assert_any_call(auto_open=False)
-        auth.get_captcha.assert_any_call(auto_open=True)
+        self.assertEqual(auth.get_captcha.call_count, 2)
+        # 验证第一次是 auto，第二次是 manual
+        calls = auth.get_captcha.call_args_list
+        self.assertEqual(calls[0].kwargs.get('engine'), "auto")
+        self.assertEqual(calls[1].kwargs.get('engine'), "manual")
 
 
 if __name__ == "__main__":

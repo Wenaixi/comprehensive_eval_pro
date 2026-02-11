@@ -11,9 +11,16 @@ class DummyMgr:
     def __init__(self, tasks):
         self._tasks = tasks
         self.submitted = []
+        self.student_name = "stu"
 
     def get_all_tasks(self, force_refresh=False):
         return self._tasks
+
+    def get_class_meeting_folders(self):
+        return []
+
+    def audit_resources(self):
+        return []
 
     def submit_task(self, task, ai_gen, dry_run=True, use_cache=True):
         if dry_run:

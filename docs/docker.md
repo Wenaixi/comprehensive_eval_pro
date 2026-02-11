@@ -1,65 +1,66 @@
-# Docker 运行（交互式 CLI）
+# 🐳 Docker 部署指南
 
-Docker 主要解决：
+CEP 提供官方 Docker 支持，旨在解决跨环境运行的依赖与配置一致性问题。
 
-- 统一 Python 环境与依赖安装
-- 在不同机器上快速运行同一套逻辑（仍需你确保合法合规与授权）
+---
 
-## 方式 A：docker run（推荐）
+## 🚀 1. 快速构建与运行
 
-构建镜像：
-
+### 构建镜像
 ```bash
-docker build -t comprehensive-eval-pro:latest .
+docker build -t cep:latest .
 ```
 
-准备一个宿主机目录用于持久化（token/缓存/验证码）：
-
+### 推荐启动命令 (交互式)
 ```bash
-mkdir -p runtime
+docker run --rm -it \
+  -v "$(pwd)/configs:/app/comprehensive_eval_pro/configs" \
+  -v "$(pwd)/runtime:/app/comprehensive_eval_pro/runtime" \
+  -v "$(pwd)/assets:/app/comprehensive_eval_pro/assets" \
+  cep:latest
 ```
 
-运行（交互式，支持输入学号/密码/验证码）：
+---
 
-```bash
-docker run --rm -it ^
-  -e SILICONFLOW_API_KEY= ^
-  -e CEP_CONFIG_FILE=/data/config.json ^
-  -e CEP_CACHE_FILE=/data/content_cache.json ^
-  -e CEP_CAPTCHA_FILE=/data/captcha.jpg ^
-  -v "%cd%\\runtime:/data" ^
-  comprehensive-eval-pro:latest
+## 📂 2. 卷挂载说明 (Volumes)
+
+| 容器路径 | 宿主机路径 (建议) | 作用 |
+| :--- | :--- | :--- |
+| `/app/comprehensive_eval_pro/configs` | `./configs` | 持久化 Token 和配置文件 |
+| `/app/comprehensive_eval_pro/runtime` | `./runtime` | 查看运行日志和调试信息 |
+| `/app/comprehensive_eval_pro/assets` | `./assets` | 提供本地图片和文档素材 |
+
+---
+
+## 🛠️ 3. Docker Compose (多任务编排)
+
+使用项目根目录下的 `docker-compose.yml` 快速启动：
+
+```yaml
+version: '3.8'
+services:
+  cep:
+    build: .
+    volumes:
+      - ./configs:/app/comprehensive_eval_pro/configs
+      - ./runtime:/app/comprehensive_eval_pro/runtime
+    environment:
+      - SILICONFLOW_API_KEY=${SILICONFLOW_API_KEY}
+    stdin_open: true
+    tty: true
 ```
 
-说明：
-
-- 不需要 AI 就不要设置 `SILICONFLOW_API_KEY`，程序会回退到缓存/默认文案。
-- 容器里不会自动弹出验证码图片；请按提示到 `runtime/captcha.jpg` 打开查看。
-- 如需在容器里使用本地资源图片，可额外挂载：
-
+运行命令：
 ```bash
-docker run --rm -it ^
-  -e CEP_CONFIG_FILE=/data/config.json ^
-  -v "%cd%\\runtime:/data" ^
-  -v "%cd%\\assets\\images:/app/comprehensive_eval_pro/assets/images" ^
-  comprehensive-eval-pro:latest
+docker-compose up --build
 ```
 
-## 方式 B：docker compose
+---
 
-```bash
-docker compose up --build
-```
+## ❓ 常见问题
 
-## Docker 构建失败：无法拉取 python 基础镜像
+### 网络受限导致构建失败
+如果在拉取 `python:3.12-slim` 时遇到超时，请尝试配置 Docker 镜像加速器或检查代理设置。
 
-如果你看到类似错误（无法从 Docker Hub 获取 token/超时）：
-
-- `failed to fetch anonymous token ... auth.docker.io ... timeout`
-
-通常是网络/代理问题：
-
-- 确认 Docker Desktop 已配置代理或可直连外网
-- 先手动执行 `docker pull python:3.12-slim` 验证能否拉取基础镜像
-- 受限网络环境下配置 registry mirror（镜像加速）
-
+### 交互模式问题
+在 Windows CMD 下运行 Docker 时，如果无法输入验证码，请确保使用了 `-it` 参数并尝试在 PowerShell 中运行。

@@ -2,6 +2,8 @@ import os
 import time
 
 
+from .policy import config
+
 def mask_secret(value: str, prefix: int = 10, suffix: int = 6) -> str:
     if not value:
         return ""
@@ -31,11 +33,11 @@ def print_all_tasks(tasks):
 
 
 def print_ai_key_notice():
-    api_key = os.getenv("SILICONFLOW_API_KEY", "").strip()
+    api_key = config.get_setting("siliconflow_api_key", "", env_name="SILICONFLOW_API_KEY").strip()
     if api_key:
         return
     print("[!] 未配置 SILICONFLOW_API_KEY：AI 在线生成将不可用，将仅使用本地缓存/默认文案。")
-    print("    解决：复制 .env.example 为 .env 并填写 SILICONFLOW_API_KEY（不要提交到仓库），或直接设置环境变量。")
+    print("    解决：在 configs/settings.yaml 中配置 siliconflow_api_key 或设置环境变量。")
 
 
 def display_user_profile(user_info, token):

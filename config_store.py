@@ -1,14 +1,99 @@
 import json
 import os
+import tempfile
+import time
+import random
+import shutil
 
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
-def default_config_paths(base_dir: str | None = None) -> tuple[str, str]:
-    if base_dir is None:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-    config_file = os.getenv("CEP_CONFIG_FILE") or os.path.join(base_dir, "config.json")
-    example_file = os.getenv("CEP_CONFIG_EXAMPLE_FILE") or os.path.join(base_dir, "config.example.json")
-    return config_file, example_file
+def get_base_dir():
+    return os.path.dirname(os.path.abspath(__file__))
 
+def get_configs_dir():
+    return os.path.join(get_base_dir(), "configs")
+
+def get_configs_example_dir():
+    return os.path.join(get_base_dir(), "configs.example")
+
+def ensure_configs_exist():
+    configs_dir = get_configs_dir()
+    example_dir = get_configs_example_dir()
+    
+    if not os.path.exists(configs_dir):
+        os.makedirs(configs_dir, exist_ok=True)
+        
+    # 同步 settings.yaml
+    settings_file = os.path.join(configs_dir, "settings.yaml")
+    settings_example = os.path.join(example_dir, "settings.example.yaml")
+    if not os.path.exists(settings_file) and os.path.exists(settings_example):
+        shutil.copy2(settings_example, settings_file)
+        
+    # 同步 state.json
+    state_file = os.path.join(configs_dir, "state.json")
+    state_example = os.path.join(example_dir, "state.example.json")
+    if not os.path.exists(state_file) and os.path.exists(state_example):
+        shutil.copy2(state_example, state_file)
+
+def load_yaml_config(file_path: str) -> dict:
+    if not yaml:
+        return {}
+    if not os.path.exists(file_path):
+        return {}
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
+
+def load_json_config(file_path: str) -> dict:
+    if not os.path.exists(file_path):
+        return {}
+    
+    max_retries = 5
+    for i in range(max_retries):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                return json.load(f) or {}
+        except (PermissionError, json.JSONDecodeError):
+            if i == max_retries - 1:
+                return {}
+            time.sleep(0.05 * (2 ** i) + random.uniform(0, 0.1))
+        except Exception:
+            return {}
+    return {}
+
+def save_json_config(config: dict, file_path: str):
+    directory = os.path.dirname(os.path.abspath(file_path))
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+        
+    fd, temp_path = tempfile.mkstemp(dir=directory, prefix=".state_", suffix=".tmp", text=True)
+    
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+        
+        max_retries = 5
+        for i in range(max_retries):
+            try:
+                # 在 Windows 上，os.replace 可以覆盖已存在的文件，而 os.rename 会报 FileExistsError
+                os.replace(temp_path, file_path)
+                break
+            except PermissionError:
+                if i == max_retries - 1:
+                    raise
+                time.sleep(0.05 * (2 ** i) + random.uniform(0, 0.1))
+    except Exception as e:
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except:
+                pass
+        raise e
 
 def load_accounts_from_txt(file_path: str):
     if not file_path:
@@ -32,58 +117,6 @@ def load_accounts_from_txt(file_path: str):
                 accounts.append((username, password))
     return accounts
 
-
-def load_config(config_file: str, example_file: str) -> dict:
-    if not os.path.exists(config_file) and os.path.exists(example_file):
-        try:
-            with open(example_file, "r", encoding="utf-8") as f:
-                example = json.load(f)
-            with open(config_file, "w", encoding="utf-8") as f:
-                json.dump(example, f, indent=4, ensure_ascii=False)
-        except Exception:
-            pass
-
-    if os.path.exists(config_file):
-        try:
-            with open(config_file, "r", encoding="utf-8") as f:
-                loaded = json.load(f)
-        except Exception:
-            loaded = {}
-    else:
-        loaded = {}
-
-    config = {
-        "model": "deepseek-ai/DeepSeek-V3.2",
-        "username": "",
-        "password": "",
-        "token": "",
-        "user_info": {},
-        "accounts": {},
-        "base_url": "http://139.159.205.146:8280",
-        "upload_url": "http://doc.nazhisoft.com/common/upload/uploadImage?bussinessType=12&groupName=other",
-        "sso_base": "https://www.nazhisoft.com",
-    }
-
-    if isinstance(loaded, dict):
-        config.update({k: v for k, v in loaded.items() if v is not None})
-
-    if not isinstance(config.get("accounts"), dict):
-        config["accounts"] = {}
-
-    legacy_username = (config.get("username") or "").strip()
-    legacy_token = (config.get("token") or "").strip()
-    legacy_user_info = config.get("user_info") if isinstance(config.get("user_info"), dict) else {}
-    if legacy_username and legacy_token and legacy_username not in config["accounts"]:
-        config["accounts"][legacy_username] = {"token": legacy_token, "user_info": legacy_user_info}
-
-    return config
-
-
-def save_config(config: dict, config_file: str):
-    with open(config_file, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
-
-
 def get_account_entry(config: dict, username: str) -> dict:
     accounts = config.get("accounts")
     if not isinstance(accounts, dict):
@@ -94,4 +127,3 @@ def get_account_entry(config: dict, username: str) -> dict:
         entry = {}
         accounts[username] = entry
     return entry
-

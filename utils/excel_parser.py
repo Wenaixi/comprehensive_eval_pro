@@ -10,7 +10,7 @@ class ExcelParser:
     @staticmethod
     def extract_text_from_xls(file_path):
         """
-        从 .xls 文件中提取所有非空文本内容
+        从 Excel 文件中提取所有非空文本内容 (支持 .xls 和 .xlsx)
         :param file_path: 文件路径
         :return: 拼接后的完整文本
         """
@@ -20,8 +20,12 @@ class ExcelParser:
         
         try:
             import pandas as pd
-            # 使用 xlrd 引擎读取旧版 xls
-            df = pd.read_excel(file_path, engine='xlrd')
+            # 根据后缀名选择引擎
+            if file_path.lower().endswith('.xlsx'):
+                df = pd.read_excel(file_path, engine='openpyxl')
+            else:
+                df = pd.read_excel(file_path, engine='xlrd')
+            
             text_parts = []
             
             # 遍历所有单元格提取文本
@@ -35,8 +39,8 @@ class ExcelParser:
             
             # 合并文本，作为 AI 总结的上下文
             return "\n".join(text_parts)
-        except ImportError:
-            logger.error("未安装 pandas/xlrd，无法解析 .xls。请安装后重试。")
+        except ImportError as e:
+            logger.error(f"未安装必要的依赖库，无法解析 Excel: {e}")
             return ""
         except Exception as e:
             logger.error(f"解析 Excel 失败 ({file_path}): {e}")

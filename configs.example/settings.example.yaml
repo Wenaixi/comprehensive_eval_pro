@@ -1,0 +1,48 @@
+# Comprehensive Eval Pro - Settings Configuration
+# 复制此文件到 configs/settings.yaml 并根据需要修改
+
+# --- AI & OCR 核心配置 ---
+# 生成内容的 AI 模型
+model: "deepseek-ai/DeepSeek-V3.2"
+
+# SiliconFlow API Key (推荐)
+siliconflow_api_key: ""
+
+# AI API 基础地址 (默认为 SiliconFlow)
+ai_base_url: "https://api.siliconflow.cn/v1"
+
+# OCR 模型列表 (按优先级排序)
+ocr_models:
+  - "siliconflow:PaddlePaddle/PaddleOCR-VL-1.5"
+  - "siliconflow:deepseek-ai/DeepSeek-OCR"
+
+# 视觉分析模型 (Vision 3.0)
+vision_model: "Qwen/Qwen3-Omni-30B-A3B-Instruct"
+
+# --- 业务逻辑策略 ---
+# 每隔多少次提交强制刷新文案 (防止被查重)
+diversity_every: 3
+
+# 默认学校名称 (如果自动识别失败则使用此值)
+default_school: ""
+
+# 账号文件路径 (相对于 comprehensive_eval_pro/ 根目录或绝对路径)
+accounts_file: "accounts.txt"
+
+# --- OCR 重试策略 ---
+# 总最大重试次数
+ocr_max_retries: 10
+# 每个 AI 模型的重试次数
+ai_ocr_retries_per_model: 3
+# 本地 ddddocr 的重试次数
+ddddocr_max_retries: 5
+
+# --- 日志配置 ---
+# 日志级别: DEBUG, INFO, WARNING, ERROR
+log_level: "INFO"
+# 是否在控制台打印日志
+log_console: true
+# 日志文件路径
+log_file: "runtime/app.log"
+# 汇总日志目录
+summary_log_dir: "runtime/summary_logs/"
